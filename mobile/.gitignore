@@ -1,0 +1,11 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+captures/
+.cxx/
+app/release/
+app/google-services.json
+verify/.gradle/
+verify/build/

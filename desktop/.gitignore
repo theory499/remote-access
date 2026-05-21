@@ -1,0 +1,10 @@
+node_modules/
+coverage/
+dist/
+out/
+.env
+.env.local
+firebase-config.local.js
+src/renderer/renderer.bundle.js
+*.log
+.DS_Store
