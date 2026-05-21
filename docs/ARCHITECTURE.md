@@ -113,3 +113,101 @@ client doesn't need to know the desktop's native resolution.
   sends are dispatched on a single-threaded executor to preserve order.
 - Touch and key events are captured on the main thread and serialised
   through the same executor.
+
+## Process and module diagram
+
+```
++---------------------------- DESKTOP HOST ------------------------------+
+|                                                                        |
+|  Electron MAIN process                                                 |
+|  +------------------+   +--------------+   +-------------------------+ |
+|  | screen-capture   |   | input-       |   | IPC handlers in main.js | |
+|  | (desktopCapturer)|   | controller   |   | * screen:list-sources   | |
+|  +------------------+   | (nut-js)     |<--+ * input:event           | |
+|                         +--------------+   | * input:screen-size     | |
+|                                            +-----------+-------------+ |
+|                                                        ^               |
+|                                          IPC via       |               |
+|                                          preload.js    |               |
+|                                            (ipcRenderer.invoke)        |
+|                                                        v               |
+|  Electron RENDERER process                                             |
+|  +------------------------------------------------------------------+  |
+|  | renderer.js                                                      |  |
+|  |   * Firebase Auth (anonymous sign-in)                            |  |
+|  |   * SessionController (pairing code, presence)                   |  |
+|  |   * FirebaseSignaling (offer/answer/ICE)                         |  |
+|  |   * RTCPeerConnection                                            |  |
+|  |        - addTrack(videoTrack)                                    |  |
+|  |        - createDataChannel('input')                              |  |
+|  |   * attachDataChannel(): protocol.parse + IPC dispatch           |  |
+|  +------------------------------------------------------------------+  |
++------------------------------------------------------------------------+
+
+                              |             |
+                       WebRTC |             | Firebase RTDB
+                       SRTP   |             | (signalling)
+                              v             v
+
++-------------------------- ANDROID CLIENT ------------------------------+
+|                                                                        |
+|  RemoteDesktopApp (FirebaseApp.initialize)                             |
+|                                                                        |
+|  MainActivity            -> RemoteControlActivity                      |
+|  (sign-in, code entry)      |                                          |
+|                             v                                          |
+|  +----------------------------------------------------------------+    |
+|  | RemoteControlActivity                                          |    |
+|  |   * SignalingClient (Firebase RTDB)                            |    |
+|  |   * WebRTCClient (PeerConnection + factory)                    |    |
+|  |       - onAddTrack -> SurfaceViewRenderer.addSink              |    |
+|  |       - onDataChannel -> attachDataChannel                     |    |
+|  |   * RemoteSurfaceController (touch -> normalised)              |    |
+|  |   * InputEventEncoder (JSON producer)                          |    |
+|  |   * AndroidKeyMapper (KeyEvent -> protocol key)                |    |
+|  +----------------------------------------------------------------+    |
++------------------------------------------------------------------------+
+```
+
+## Data ownership
+
+| Data | Owner | Lifetime |
+| --- | --- | --- |
+| Pairing code | Desktop renderer | One per session; regenerated on restart. |
+| `sessions/{code}/host` | Desktop renderer | Removed via `onDisconnect` or `clearSession`. |
+| `sessions/{code}/client` | Android `RemoteControlActivity` | Removed via `onDisconnect` when the activity dies. |
+| `sessions/{code}/offer` | Desktop renderer | Written once per session. |
+| `sessions/{code}/answer` | Android `RemoteControlActivity` | Written once per session. |
+| `sessions/{code}/iceCandidates/host` | Desktop renderer | Written until ICE gathering completes. |
+| `sessions/{code}/iceCandidates/client` | Android `RemoteControlActivity` | Written until ICE gathering completes. |
+| `MediaStream` (screen) | Desktop renderer | Stopped on session teardown. |
+| `RTCPeerConnection` (desktop) | Desktop renderer | Closed on restart. |
+| `PeerConnection` (Android) | `WebRTCClient` | Closed on `RemoteControlActivity.onDestroy`. |
+| Held modifier / key state | Desktop `InputController` | Cleared each time the held-keys set drains. |
+| `pendingIce` queue | Android `RemoteControlActivity` | Drained the moment `setRemoteOffer.onSuccess` fires. |
+
+## Error handling philosophy
+
+- Outside the WebRTC peer, every Firebase operation has a chance of
+  failing; the wrappers in `FirebaseSignaling` and `SignalingClient`
+  surface errors through their callback or completion handlers and the
+  renderer logs them visibly.
+- The desktop validates every inbound protocol message via
+  `protocol.validate`. Malformed messages are dropped silently because
+  the producer should also have validated them and any failure is a
+  programmer error or hostile peer; logging would only produce noise.
+- The desktop also guards each `InputController.handle` call. If
+  `nut.js` throws (unknown key, OS error), the renderer logs the
+  message but the session stays up.
+- The Android side mirrors this: malformed JSON inside `handleIncoming`
+  is silently dropped, while WebRTC and Firebase failures bubble up to
+  the user-visible status line.
+
+## Where to read next
+
+- [CONNECTION_FLOW.md](CONNECTION_FLOW.md) - the lifecycle that wires
+  these components together.
+- [SCREEN_SHARING.md](SCREEN_SHARING.md) - the video path.
+- [INPUT_HANDLING.md](INPUT_HANDLING.md) - the input path.
+- [DESKTOP.md](DESKTOP.md) and [MOBILE.md](MOBILE.md) - file-by-file
+  references.

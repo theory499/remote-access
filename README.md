@@ -43,10 +43,23 @@ and keyboard events back over a WebRTC data channel.
 
 ## Documentation
 
-- `docs/ARCHITECTURE.md` - end-to-end design, components, threading model.
-- `docs/PROTOCOL.md` - input event protocol over the WebRTC data channel.
-- `docs/FIREBASE_SETUP.md` - step-by-step Firebase project setup.
-- `docs/TESTING.md` - running unit, integration, and end-to-end tests.
+The complete documentation hub is in [`docs/README.md`](docs/README.md).
+Start there for an organised entry point; the documents linked below
+cover the most-asked questions.
+
+| You want to | Read |
+| --- | --- |
+| Get an overview of the product | [`docs/OVERVIEW.md`](docs/OVERVIEW.md) |
+| Understand how the desktop and phone connect | [`docs/CONNECTION_FLOW.md`](docs/CONNECTION_FLOW.md) |
+| Understand how you see the desktop on the phone | [`docs/SCREEN_SHARING.md`](docs/SCREEN_SHARING.md) |
+| Understand how taps and keystrokes reach the desktop | [`docs/INPUT_HANDLING.md`](docs/INPUT_HANDLING.md) |
+| See the wire protocol | [`docs/PROTOCOL.md`](docs/PROTOCOL.md) |
+| Set up Firebase | [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md) |
+| Find a specific component | [`docs/COMPONENTS.md`](docs/COMPONENTS.md), [`docs/DESKTOP.md`](docs/DESKTOP.md), [`docs/MOBILE.md`](docs/MOBILE.md) |
+| Develop and contribute | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md), [`docs/TESTING.md`](docs/TESTING.md) |
+| Diagnose a problem | [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) |
+| Review the security model | [`docs/SECURITY.md`](docs/SECURITY.md) |
+| Look up a term | [`docs/GLOSSARY.md`](docs/GLOSSARY.md) |
 
 ## Testing
 
