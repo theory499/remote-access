@@ -22,6 +22,14 @@ you are seeing, then follow the steps in the right-hand column.
 | Connect button stays greyed out even with six characters | The code contains characters not in the alphabet (`O`, `0`, `I`, `1`). | Re-type with the safe alphabet. The `TextWatcher` automatically strips them; if the field looks shorter than what you typed, that is why. |
 | App immediately closes on launch | `RemoteDesktopApp` failed to initialise Firebase. | Inspect logcat for the underlying exception; usually a malformed `google-services.json`. |
 
+## Testing on an emulator / simulator
+
+| Symptom | What to do |
+| --- | --- |
+| The Android emulator's camera shows a scripted living room scene, not the QR | Right-click the QR in the desktop wizard and save it as `qr.png`. Then `adb push qr.png /sdcard/Download/qr.png`. On the emulator, in the Remote Desktop app's QR scanner, tap **Choose image from gallery** and select the file. |
+| The iOS Simulator's camera shows a virtual scene | Drag the saved `qr.png` from your Mac onto the Simulator window - it lands in Photos. In the app, tap **Choose image from gallery**. |
+| Picked image is rejected as "No QR code found" | Pick a higher-resolution screenshot. The desktop wizard's QR is 512x512 - that's plenty. Avoid screenshots with the QR off-centre or with reflections. |
+
 ## During pairing
 
 | Symptom | Most likely cause | What to do |

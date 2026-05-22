@@ -3,9 +3,11 @@ package com.remotedesktop.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -37,8 +39,15 @@ class QrScannerActivity : AppCompatActivity() {
         if (granted) startCamera()
         else {
             Toast.makeText(this, R.string.qr_camera_denied, Toast.LENGTH_LONG).show()
-            finish()
+            // Even without the camera, the gallery picker is still usable,
+            // so keep the activity open rather than finishing.
         }
+    }
+
+    private val pickImage = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) scanImage(uri)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +55,12 @@ class QrScannerActivity : AppCompatActivity() {
         binding = ActivityQrScannerBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.statusText.setText(R.string.qr_status_aim)
+
+        binding.galleryButton.setOnClickListener {
+            pickImage.launch(PickVisualMediaRequest(
+                ActivityResultContracts.PickVisualMedia.ImageOnly
+            ))
+        }
 
         if (hasCameraPermission()) startCamera()
         else requestCamera.launch(Manifest.permission.CAMERA)
@@ -92,6 +107,41 @@ class QrScannerActivity : AppCompatActivity() {
                 }
             }
             .addOnCompleteListener { proxy.close() }
+    }
+
+    private fun scanImage(uri: Uri) {
+        binding.statusText.setText(R.string.qr_status_saving)
+        val image = try {
+            InputImage.fromFilePath(this, uri)
+        } catch (err: Exception) {
+            Toast.makeText(
+                this,
+                getString(R.string.qr_image_read_failed, err.localizedMessage ?: "unknown"),
+                Toast.LENGTH_LONG
+            ).show()
+            binding.statusText.setText(R.string.qr_status_aim)
+            return
+        }
+        scanner.process(image)
+            .addOnSuccessListener { barcodes ->
+                val raw = barcodes.firstOrNull {
+                    it.format == Barcode.FORMAT_QR_CODE && it.rawValue != null
+                }?.rawValue
+                if (raw != null) {
+                    handleScan(raw)
+                } else {
+                    Toast.makeText(this, R.string.qr_no_code_in_image, Toast.LENGTH_LONG).show()
+                    binding.statusText.setText(R.string.qr_status_aim)
+                }
+            }
+            .addOnFailureListener { err ->
+                Toast.makeText(
+                    this,
+                    getString(R.string.qr_image_read_failed, err.localizedMessage ?: "unknown"),
+                    Toast.LENGTH_LONG
+                ).show()
+                binding.statusText.setText(R.string.qr_status_aim)
+            }
     }
 
     private fun handleScan(raw: String) {

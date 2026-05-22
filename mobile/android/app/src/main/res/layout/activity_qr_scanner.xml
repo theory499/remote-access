@@ -54,4 +54,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/galleryButton"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="48dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="@string/qr_pick_from_gallery"
+        android:textColor="#FFFFFF"
+        app:strokeColor="#FFFFFF"
+        app:rippleColor="#33FFFFFF"
+        app:icon="@android:drawable/ic_menu_gallery"
+        app:iconTint="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
@@ -16,34 +17,77 @@ struct ContentView: View {
 private struct ScannerScreen: View {
     @EnvironmentObject var appState: AppState
     @State private var status: String = "Aim at the pairing QR code"
+    @State private var pickerItem: PhotosPickerItem?
 
     var body: some View {
-        ZStack(alignment: .top) {
-            QRScannerView { raw in
-                handle(raw: raw)
-            }
-            .ignoresSafeArea()
+        ZStack {
+            QRScannerView { raw in handle(raw: raw) }
+                .ignoresSafeArea()
 
-            VStack(spacing: 8) {
-                Text("Scan the QR code shown on your desktop")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                Text(status)
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                if let err = appState.configError {
-                    Text(err)
-                        .font(.caption)
-                        .foregroundColor(.red)
-                        .padding(.horizontal)
+            VStack {
+                VStack(spacing: 8) {
+                    Text("Scan the QR code shown on your desktop")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                    Text(status)
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                    if let err = appState.configError {
+                        Text(err)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .padding(.horizontal)
+                    }
                 }
+                .padding(.top, 48)
+                .padding(.horizontal, 24)
+
+                Spacer()
+
+                PhotosPicker(
+                    selection: $pickerItem,
+                    matching: .images,
+                    photoLibrary: .shared()
+                ) {
+                    Label("Choose image from gallery", systemImage: "photo.on.rectangle")
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.white, lineWidth: 1)
+                        )
+                }
+                .padding(.bottom, 48)
             }
-            .padding(.top, 48)
-            .padding(.horizontal, 24)
         }
         .background(Color.black.ignoresSafeArea())
+        .onChange(of: pickerItem) { newItem in
+            guard let newItem = newItem else { return }
+            Task { await ingestPickedImage(newItem) }
+        }
+    }
+
+    private func ingestPickedImage(_ item: PhotosPickerItem) async {
+        status = "Reading image…"
+        do {
+            guard
+                let data = try await item.loadTransferable(type: Data.self),
+                let image = UIImage(data: data)
+            else {
+                status = "Could not read that image."
+                return
+            }
+            guard let raw = QRImageDecoder.decode(image) else {
+                status = "No QR code found in that image."
+                return
+            }
+            handle(raw: raw)
+        } catch {
+            status = "Could not read that image: \(error.localizedDescription)"
+        }
     }
 
     private func handle(raw: String) {

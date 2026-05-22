@@ -12,6 +12,8 @@
     <string>1</string>
     <key>NSCameraUsageDescription</key>
     <string>Used to scan the pairing QR code shown on the desktop app.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Used to pick a saved QR code image when live scanning is not available (for example on a Simulator).</string>
     <key>UILaunchScreen</key>
     <dict/>
 </dict>

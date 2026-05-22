@@ -108,8 +108,25 @@ skip both — at least one mobile platform must be configured.
 ## Step 5 — Pair the phone
 
 The wizard generates a QR code containing all the values you just
-entered. Open the Remote Desktop app on your phone and point the
-camera at the QR.
+entered. Open the Remote Desktop app on your phone and either:
+
+- **Point the camera at the QR** (live scan), or
+- **Tap "Choose image from gallery"** and pick a saved screenshot of
+  the QR.
+
+The gallery option exists specifically for emulator / simulator
+testing where the virtual camera shows a scripted scene rather than
+your desktop. The simplest workflow on an Android emulator:
+
+```sh
+# Right-click the QR in the desktop wizard, "Save image as qr.png", then:
+adb push qr.png /sdcard/Download/qr.png
+```
+
+The PNG immediately shows up in the emulator's gallery, ready to pick.
+
+On an iOS Simulator, drag the PNG onto the Simulator window - it
+will land in Photos.
 
 The mobile apps process the QR like this:
 

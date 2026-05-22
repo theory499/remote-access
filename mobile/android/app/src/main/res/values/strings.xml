@@ -27,5 +27,8 @@
     <string name="qr_status_saving">Saving configuration…</string>
     <string name="qr_status_ok">Configuration applied.</string>
     <string name="qr_camera_denied">Camera permission is required to scan the QR code.</string>
+    <string name="qr_pick_from_gallery">Choose image from gallery</string>
+    <string name="qr_no_code_in_image">No QR code found in that image. Try a different image.</string>
+    <string name="qr_image_read_failed">Could not read the selected image: %1$s</string>
     <string name="action_change_backend">Change backend configuration</string>
 </resources>
