@@ -44,7 +44,7 @@
       <!-- Step 2: Web config + probe -->
       <section class="step card hidden" data-step="2">
         <h2>Firebase web config (this desktop)</h2>
-        <p class="muted">Paste the <code>firebaseConfig</code> object from Firebase Console &rarr; Project settings &rarr; Your apps &rarr; Web app. The wizard will sign in anonymously and write a test record to confirm everything works.</p>
+        <p class="muted">Paste the <code>firebaseConfig</code> snippet from Firebase Console &rarr; Project settings &rarr; Your apps &rarr; Web app, exactly as shown there. JavaScript object literal syntax (unquoted keys), the full <code>const firebaseConfig = { ... };</code> assignment, single quotes, and trailing commas are all accepted. The wizard signs in anonymously and writes a test record to confirm everything works.</p>
         <details>
           <summary>Don't have it yet? Click for setup steps.</summary>
           <ol class="hints">
@@ -55,14 +55,14 @@
             <li>Project settings &rarr; Your apps &rarr; Add Web app, copy the config object.</li>
           </ol>
         </details>
-        <textarea id="webConfigInput" rows="10" spellcheck="false"
-          placeholder='{
-  "apiKey": "...",
-  "authDomain": "your-project.firebaseapp.com",
-  "databaseURL": "https://your-project-default-rtdb.firebaseio.com",
-  "projectId": "your-project",
-  "appId": "1:1234567890:web:..."
-}'></textarea>
+        <textarea id="webConfigInput" rows="12" spellcheck="false"
+          placeholder='const firebaseConfig = {
+  apiKey: "AIza...",
+  authDomain: "your-project.firebaseapp.com",
+  databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+  projectId: "your-project",
+  appId: "1:1234567890:web:..."
+};'></textarea>
         <div class="hint" id="webHint"></div>
         <div class="actions">
           <button data-action="back">Back</button>

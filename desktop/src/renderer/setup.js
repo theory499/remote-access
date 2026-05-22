@@ -38,17 +38,8 @@ function setInlineHint(id, message, kind = 'info') {
   el.className = `hint ${kind}`;
 }
 
-function parseWebConfig(raw) {
-  const trimmed = raw.trim();
-  if (!trimmed) return { error: 'Paste the config object first.' };
-  let parsed;
-  try {
-    parsed = JSON.parse(trimmed);
-  } catch (err) {
-    return { error: 'That is not valid JSON. Make sure quotes are doubled (use double quotes) and there is no leading "const firebaseConfig =".' };
-  }
-  if (parsed && typeof parsed === 'object' && parsed.firebaseConfig) parsed = parsed.firebaseConfig;
-  return { config: parsed };
+async function parseWebConfig(raw) {
+  return window.api.parseWebConfigPaste(raw);
 }
 
 function readAndroidForm() {
@@ -103,7 +94,7 @@ document.addEventListener('click', async (event) => {
 
   if (action === 'probe-web') {
     const raw = document.getElementById('webConfigInput').value;
-    const parsed = parseWebConfig(raw);
+    const parsed = await parseWebConfig(raw);
     if (parsed.error) {
       setInlineHint('webHint', parsed.error, 'error');
       return;

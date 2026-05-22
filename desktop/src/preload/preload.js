@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('api', {
 
   // Configuration / setup wizard
   getActiveConfig: () => ipcRenderer.invoke('config:get-active'),
+  parseWebConfigPaste: (raw) => ipcRenderer.invoke('config:parse-web', raw),
   probeWebConfig: (web) => ipcRenderer.invoke('config:probe-web', web),
   validateAndroidConfig: (android) => ipcRenderer.invoke('config:validate-android', android),
   validateIosConfig: (ios) => ipcRenderer.invoke('config:validate-ios', ios),

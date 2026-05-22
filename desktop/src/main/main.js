@@ -14,6 +14,7 @@ const {
   validateFirebaseAndroidConfig,
   validateFirebaseIosConfig
 } = require('../shared/backend-config');
+const { parseFirebaseConfigPaste } = require('../shared/config-parser');
 
 let mainWindow = null;
 let inputController = null;
@@ -87,6 +88,10 @@ function registerIpcHandlers() {
 
   ipcMain.handle('config:get-active', async () => {
     return getConfigStore().load();
+  });
+
+  ipcMain.handle('config:parse-web', async (_event, raw) => {
+    return parseFirebaseConfigPaste(raw);
   });
 
   ipcMain.handle('config:probe-web', async (_event, web) => {
