@@ -32,10 +32,22 @@ describe('probeFirebaseWebConfig', () => {
   test('returns ok with the resolved uid when the round-trip succeeds', async () => {
     const { deps } = buildDeps();
     const result = await probeFirebaseWebConfig(validWeb, deps);
-    expect(result).toEqual({ ok: true, uid: 'probe-uid' });
+    expect(result.ok).toBe(true);
+    expect(result.uid).toBe('probe-uid');
+    expect(result.probeCode).toMatch(/^[A-Z0-9]{6}$/);
     expect(deps.initializeApp).toHaveBeenCalled();
     expect(deps.set).toHaveBeenCalled();
     expect(deps.get).toHaveBeenCalled();
+  });
+
+  test('writes under sessions/{probeCode}/host and cleans up the whole session', async () => {
+    const { deps } = buildDeps();
+    const result = await probeFirebaseWebConfig(validWeb, deps);
+    expect(result.ok).toBe(true);
+    const writePath = deps.set.mock.calls[0][0].path;
+    expect(writePath).toMatch(/^sessions\/[A-Z0-9]{6}\/host$/);
+    const removePath = deps.remove.mock.calls[0][0].path;
+    expect(removePath).toMatch(/^sessions\/[A-Z0-9]{6}$/);
   });
 
   test('reports a shape error when the config is missing fields', async () => {
