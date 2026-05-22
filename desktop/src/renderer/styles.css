@@ -211,3 +211,31 @@ details summary { cursor: pointer; color: var(--accent); font-size: 12px; margin
 .link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; text-decoration: underline; font-size: inherit; width: auto; }
 .error { color: var(--danger); }
 code { font-family: ui-monospace, Menlo, monospace; font-size: 90%; }
+
+.file-drop {
+  margin: 12px 0;
+  padding: 24px;
+  border: 1px dashed rgba(255,255,255,0.20);
+  border-radius: 10px;
+  text-align: center;
+  background: rgba(255,255,255,0.02);
+  transition: border-color 150ms ease, background 150ms ease;
+}
+.file-drop.dragover {
+  border-color: var(--accent);
+  background: rgba(56,189,248,0.10);
+}
+.file-drop p { margin: 4px 0; font-size: 13px; color: var(--fg-dim); }
+.file-drop p strong { color: var(--fg); font-weight: 600; }
+.file-drop-summary { text-align: left; }
+.file-drop-summary p { margin: 4px 0; }
+.file-drop-summary dl {
+  margin: 8px 0 0;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 4px 12px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+}
+.file-drop-summary dt { color: var(--fg-dim); }
+.file-drop-summary dd { margin: 0; color: var(--fg); word-break: break-all; }

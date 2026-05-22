@@ -15,6 +15,10 @@ const {
   validateFirebaseIosConfig
 } = require('../shared/backend-config');
 const { parseFirebaseConfigPaste } = require('../shared/config-parser');
+const {
+  parseGoogleServicesJson,
+  parseGoogleServiceInfoPlist
+} = require('../shared/firebase-file-parser');
 
 let mainWindow = null;
 let inputController = null;
@@ -106,6 +110,14 @@ function registerIpcHandlers() {
   ipcMain.handle('config:validate-ios', async (_event, ios) => {
     const cleaned = validateFirebaseIosConfig(ios);
     return cleaned ? { ok: true, value: cleaned } : { ok: false };
+  });
+
+  ipcMain.handle('config:parse-android-file', async (_event, { content, webConfig }) => {
+    return parseGoogleServicesJson(content, webConfig || {});
+  });
+
+  ipcMain.handle('config:parse-ios-file', async (_event, { content, webConfig }) => {
+    return parseGoogleServiceInfoPlist(content, webConfig || {});
   });
 
   ipcMain.handle('config:save', async (_event, fullConfig) => {

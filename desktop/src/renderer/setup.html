@@ -74,22 +74,21 @@
       <!-- Step 3: Android config -->
       <section class="step card hidden" data-step="3">
         <h2>Firebase Android config</h2>
-        <p class="muted">Add an Android app to your Firebase project (package <code>com.remotedesktop</code>), then paste the values below. The phone will receive these via QR; no <code>google-services.json</code> is needed.</p>
-        <p class="muted small">From the downloaded <code>google-services.json</code>: <code>client[0].api_key[0].current_key</code>, <code>client[0].client_info.mobilesdk_app_id</code>, top-level <code>project_info.project_id</code>, <code>project_info.firebase_url</code>.</p>
-        <div class="form-grid">
-          <label>API key
-            <input type="text" id="androidApiKey" placeholder="AIza..." spellcheck="false" />
-          </label>
-          <label>Application ID
-            <input type="text" id="androidApplicationId" placeholder="1:1234567890:android:..." spellcheck="false" />
-          </label>
-          <label>Project ID
-            <input type="text" id="androidProjectId" placeholder="your-project" spellcheck="false" />
-          </label>
-          <label>Database URL
-            <input type="text" id="androidDatabaseUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" spellcheck="false" />
-          </label>
+        <p class="muted">In Firebase Console, add an Android app (package <code>com.remotedesktop</code>) and download <code>google-services.json</code>. Drop the file below; the wizard extracts the four values it needs and forwards them to the phone via QR.</p>
+
+        <div class="file-drop" id="androidDrop">
+          <input type="file" id="androidFile" accept="application/json,.json" hidden />
+          <div class="file-drop-prompt" id="androidPrompt">
+            <p><strong>Drop <code>google-services.json</code> here</strong></p>
+            <p class="muted small">or <button class="link" type="button" data-action="pick-android">choose a file</button></p>
+          </div>
+          <div class="file-drop-summary hidden" id="androidSummary">
+            <p><strong id="androidFileName"></strong></p>
+            <dl id="androidFields"></dl>
+            <p><button class="link" type="button" data-action="pick-android">Replace file</button></p>
+          </div>
         </div>
+
         <label class="checkbox">
           <input type="checkbox" id="androidSkip" />
           Skip Android (I only need iOS).
@@ -104,25 +103,21 @@
       <!-- Step 4: iOS config -->
       <section class="step card hidden" data-step="4">
         <h2>Firebase iOS config</h2>
-        <p class="muted">Add an iOS app to your Firebase project (bundle <code>com.remotedesktop.ios</code>), then paste the values below. The phone will receive these via QR; no <code>GoogleService-Info.plist</code> is needed.</p>
-        <p class="muted small">From the downloaded <code>GoogleService-Info.plist</code>: <code>API_KEY</code>, <code>GOOGLE_APP_ID</code>, <code>PROJECT_ID</code>, <code>DATABASE_URL</code>, <code>BUNDLE_ID</code>.</p>
-        <div class="form-grid">
-          <label>API key
-            <input type="text" id="iosApiKey" placeholder="AIza..." spellcheck="false" />
-          </label>
-          <label>Google app ID
-            <input type="text" id="iosGoogleAppId" placeholder="1:1234567890:ios:..." spellcheck="false" />
-          </label>
-          <label>Project ID
-            <input type="text" id="iosProjectId" placeholder="your-project" spellcheck="false" />
-          </label>
-          <label>Database URL
-            <input type="text" id="iosDatabaseUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" spellcheck="false" />
-          </label>
-          <label>Bundle ID
-            <input type="text" id="iosBundleId" placeholder="com.remotedesktop.ios" spellcheck="false" />
-          </label>
+        <p class="muted">In Firebase Console, add an iOS app (bundle <code>com.remotedesktop.ios</code>) and download <code>GoogleService-Info.plist</code>. Drop the file below; the wizard extracts the values and forwards them to the phone via QR.</p>
+
+        <div class="file-drop" id="iosDrop">
+          <input type="file" id="iosFile" accept="application/x-plist,text/xml,.plist" hidden />
+          <div class="file-drop-prompt" id="iosPrompt">
+            <p><strong>Drop <code>GoogleService-Info.plist</code> here</strong></p>
+            <p class="muted small">or <button class="link" type="button" data-action="pick-ios">choose a file</button></p>
+          </div>
+          <div class="file-drop-summary hidden" id="iosSummary">
+            <p><strong id="iosFileName"></strong></p>
+            <dl id="iosFields"></dl>
+            <p><button class="link" type="button" data-action="pick-ios">Replace file</button></p>
+          </div>
         </div>
+
         <label class="checkbox">
           <input type="checkbox" id="iosSkip" />
           Skip iOS (I only need Android).

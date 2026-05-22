@@ -42,24 +42,129 @@ async function parseWebConfig(raw) {
   return window.api.parseWebConfigPaste(raw);
 }
 
-function readAndroidForm() {
-  return {
-    apiKey: document.getElementById('androidApiKey').value,
-    applicationId: document.getElementById('androidApplicationId').value,
-    projectId: document.getElementById('androidProjectId').value,
-    databaseURL: document.getElementById('androidDatabaseUrl').value
-  };
+function renderExtractedFields(containerId, fields) {
+  const dl = document.getElementById(containerId);
+  dl.innerHTML = '';
+  for (const [label, value] of fields) {
+    const dt = document.createElement('dt');
+    dt.textContent = label;
+    const dd = document.createElement('dd');
+    dd.textContent = value;
+    dl.appendChild(dt);
+    dl.appendChild(dd);
+  }
 }
 
-function readIosForm() {
-  return {
-    apiKey: document.getElementById('iosApiKey').value,
-    googleAppId: document.getElementById('iosGoogleAppId').value,
-    projectId: document.getElementById('iosProjectId').value,
-    databaseURL: document.getElementById('iosDatabaseUrl').value,
-    bundleId: document.getElementById('iosBundleId').value
-  };
+function summariseAndroid(android) {
+  renderExtractedFields('androidFields', [
+    ['Project', android.projectId],
+    ['Application ID', android.applicationId],
+    ['API key', `${android.apiKey.slice(0, 12)}...`],
+    ['Database URL', android.databaseURL]
+  ]);
 }
+
+function summariseIos(ios) {
+  renderExtractedFields('iosFields', [
+    ['Project', ios.projectId],
+    ['Bundle ID', ios.bundleId],
+    ['Google app ID', ios.googleAppId],
+    ['API key', `${ios.apiKey.slice(0, 12)}...`],
+    ['Database URL', ios.databaseURL]
+  ]);
+}
+
+function showAndroidSummary(fileName) {
+  document.getElementById('androidPrompt').classList.add('hidden');
+  document.getElementById('androidSummary').classList.remove('hidden');
+  document.getElementById('androidFileName').textContent = fileName;
+}
+
+function showIosSummary(fileName) {
+  document.getElementById('iosPrompt').classList.add('hidden');
+  document.getElementById('iosSummary').classList.remove('hidden');
+  document.getElementById('iosFileName').textContent = fileName;
+}
+
+function resetAndroidSummary() {
+  document.getElementById('androidPrompt').classList.remove('hidden');
+  document.getElementById('androidSummary').classList.add('hidden');
+  state.android = null;
+}
+
+function resetIosSummary() {
+  document.getElementById('iosPrompt').classList.remove('hidden');
+  document.getElementById('iosSummary').classList.add('hidden');
+  state.ios = null;
+}
+
+async function ingestAndroidFile(file) {
+  if (!file) return;
+  setInlineHint('androidHint', `Reading ${file.name}...`, 'info');
+  let content;
+  try { content = await file.text(); } catch (err) {
+    setInlineHint('androidHint', `Could not read file: ${err.message}`, 'error');
+    return;
+  }
+  const result = await window.api.parseAndroidFile(content, state.web || null);
+  if (result.error) {
+    setInlineHint('androidHint', result.error, 'error');
+    resetAndroidSummary();
+    return;
+  }
+  state.android = result.android;
+  summariseAndroid(result.android);
+  showAndroidSummary(file.name);
+  setInlineHint('androidHint', 'Parsed and validated.', 'ok');
+}
+
+async function ingestIosFile(file) {
+  if (!file) return;
+  setInlineHint('iosHint', `Reading ${file.name}...`, 'info');
+  let content;
+  try { content = await file.text(); } catch (err) {
+    setInlineHint('iosHint', `Could not read file: ${err.message}`, 'error');
+    return;
+  }
+  const result = await window.api.parseIosFile(content, state.web || null);
+  if (result.error) {
+    setInlineHint('iosHint', result.error, 'error');
+    resetIosSummary();
+    return;
+  }
+  state.ios = result.ios;
+  summariseIos(result.ios);
+  showIosSummary(file.name);
+  setInlineHint('iosHint', 'Parsed and validated.', 'ok');
+}
+
+function installDropZone(zoneId, fileInputId, onFile) {
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(fileInputId);
+  input.addEventListener('change', () => {
+    if (input.files && input.files[0]) onFile(input.files[0]);
+  });
+  zone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]);
+  });
+}
+
+installDropZone('androidDrop', 'androidFile', ingestAndroidFile);
+installDropZone('iosDrop', 'iosFile', ingestIosFile);
+
+document.getElementById('androidSkip').addEventListener('change', (e) => {
+  if (e.target.checked) resetAndroidSummary();
+});
+document.getElementById('iosSkip').addEventListener('change', (e) => {
+  if (e.target.checked) resetIosSummary();
+});
 
 async function copyToClipboard(text) {
   try { await navigator.clipboard.writeText(text); return true; } catch (_) { return false; }
@@ -127,6 +232,16 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
+  if (action === 'pick-android') {
+    document.getElementById('androidFile').click();
+    return;
+  }
+
+  if (action === 'pick-ios') {
+    document.getElementById('iosFile').click();
+    return;
+  }
+
   if (action === 'next-android') {
     const skip = document.getElementById('androidSkip').checked;
     if (skip) {
@@ -134,13 +249,10 @@ document.addEventListener('click', async (event) => {
       showStep(4);
       return;
     }
-    const result = await window.api.validateAndroidConfig(readAndroidForm());
-    if (!result.ok) {
-      setInlineHint('androidHint', 'All four fields are required, or check "Skip Android".', 'error');
+    if (!state.android) {
+      setInlineHint('androidHint', 'Drop google-services.json or check "Skip Android".', 'error');
       return;
     }
-    state.android = result.value;
-    setInlineHint('androidHint', 'Looks good.', 'ok');
     showStep(4);
     return;
   }
@@ -149,13 +261,9 @@ document.addEventListener('click', async (event) => {
     const skip = document.getElementById('iosSkip').checked;
     if (skip) {
       state.ios = null;
-    } else {
-      const result = await window.api.validateIosConfig(readIosForm());
-      if (!result.ok) {
-        setInlineHint('iosHint', 'All five fields are required, or check "Skip iOS".', 'error');
-        return;
-      }
-      state.ios = result.value;
+    } else if (!state.ios) {
+      setInlineHint('iosHint', 'Drop GoogleService-Info.plist or check "Skip iOS".', 'error');
+      return;
     }
     if (!state.android && !state.ios) {
       setInlineHint('iosHint', 'You need to configure Android, iOS, or both before you can finish.', 'error');
