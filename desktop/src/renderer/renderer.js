@@ -20,8 +20,6 @@ import { FirebaseSignaling } from '../main/firebase-signaling.js';
 import { SessionController } from '../main/session-controller.js';
 import { parse } from '../shared/protocol.js';
 
-import firebaseConfig from '../shared/firebase-config.js';
-
 const ICE_SERVERS = [
   { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
 ];
@@ -233,7 +231,13 @@ async function negotiate() {
 
 async function bootstrap() {
   setStatus({ status: 'initialising' });
-  firebaseApp = initializeApp(firebaseConfig);
+  const active = await window.api.getActiveConfig();
+  if (!active || !active.web) {
+    log('No backend configuration found; opening setup.');
+    await window.api.enterSetup();
+    return;
+  }
+  firebaseApp = initializeApp(active.web);
   auth = getAuth(firebaseApp);
   database = getDatabase(firebaseApp);
   setStatus({ status: 'authenticating' });
@@ -284,6 +288,14 @@ async function restart() {
 dom.restart.addEventListener('click', () => {
   restart().catch((err) => log(`Restart failed: ${err.message}`));
 });
+
+const reconfigureBtn = document.getElementById('reconfigure');
+if (reconfigureBtn) {
+  reconfigureBtn.addEventListener('click', async () => {
+    await window.api.resetConfig();
+    await window.api.enterSetup();
+  });
+}
 
 bootstrap().catch((err) => {
   setStatus({ status: 'error' });

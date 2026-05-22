@@ -1,57 +1,79 @@
 # Firebase setup
 
-The remote desktop suite uses three Firebase services:
+The desktop host now ships with a [setup wizard](SETUP_WIZARD.md) that
+handles 90% of this for you. The manual Firebase Console steps that
+the wizard cannot perform on your behalf are:
 
-- **Authentication** - anonymous sign-in so both peers can read / write
-  signalling data with stable UIDs.
-- **Realtime Database** - WebRTC offer / answer / ICE candidate exchange,
-  plus presence tracking.
-- **Cloud Messaging** *(optional)* - wake the desktop from low-power
-  state. Not required for core functionality.
+1. **Create the project.**
+2. **Enable Anonymous sign-in.**
+3. **Publish the Realtime Database security rules.**
 
-## 1. Create a project
+Everything else — pasting credentials, validating them, generating QR
+codes for the mobile apps — happens inside the wizard.
+
+## 1. Create the Firebase project
 
 1. Open [console.firebase.google.com](https://console.firebase.google.com).
 2. Click **Add project**, give it a name (for example
-   `remote-desktop`), accept the defaults, and create the project.
+   `remote-desktop`), accept the defaults, **Create project**.
 
 ## 2. Enable Anonymous Authentication
 
-1. In the project, open **Build > Authentication**.
-2. Click **Get started**.
-3. On the **Sign-in method** tab, enable **Anonymous** and save.
+1. **Build &rarr; Authentication &rarr; Get started**.
+2. **Sign-in method** tab &rarr; **Anonymous** &rarr; toggle **Enable**
+   &rarr; **Save**.
 
-## 3. Enable Realtime Database
+If you skip this step the desktop wizard's "Test connection" will fail
+at the auth stage with the message:
 
-1. Open **Build > Realtime Database**.
-2. Click **Create database**, choose a location, and start in
-   **locked mode**.
-3. On the **Rules** tab, paste the contents of
-   `firebase/database.rules.json` and **Publish**.
+> Anonymous sign-in is not enabled in this Firebase project. Open
+> Firebase Console > Authentication > Sign-in method, enable Anonymous,
+> then retry.
 
-## 4. Register the desktop (web) app
+## 3. Create the Realtime Database
 
-1. In **Project settings > General**, scroll to **Your apps** and click
-   the `</>` icon.
-2. Register the app (any nickname; do not enable hosting).
-3. Copy the generated `firebaseConfig` object.
-4. Open `desktop/src/shared/firebase-config.js` and replace the
-   placeholder object with your configuration.
+1. **Build &rarr; Realtime Database &rarr; Create database**, pick a
+   location, start in **locked mode**.
+2. **Rules** tab &rarr; replace the content with the contents of
+   `firebase/database.rules.json` (or use the **Copy rules** button in
+   the desktop wizard's step 2) &rarr; **Publish**.
 
-## 5. Register the Android app
+If you skip the rules step, the desktop wizard's "Test connection"
+will fail at the write stage with:
 
-1. In the same **Your apps** section, click the Android icon.
-2. Use package name `com.remotedesktop` (or change it everywhere - see
-   `mobile/app/build.gradle.kts`).
-3. Download the generated `google-services.json` and copy it to
-   `mobile/app/google-services.json`.
+> The Realtime Database rules blocked the test write. Publish the
+> rules from the next step and retry.
 
-## 6. Verify
+## 4. Register your client apps
 
-- Desktop: `cd desktop && npm install && npm start` should display a
-  six-character pairing code and the status "Waiting for client".
-- Android: `cd mobile && ./gradlew installDebug` should install the app
-  and signing in anonymously should succeed.
+The wizard needs values from one or both of these:
 
-If anonymous sign-in fails, double-check step 2 - Authentication must be
-enabled before the database rules will allow signalling.
+- **Web app** — required for the desktop. **Project settings &rarr;
+  Your apps &rarr; `</>`** (Add Web app).
+- **Android app** — required for the Android client. **Add app &rarr;
+  Android**, use package name `com.remotedesktop`. **You do not need
+  to download `google-services.json`** - the wizard only needs four
+  values from it, which you can read in the Firebase Console preview.
+- **iOS app** — required for the iOS client. **Add app &rarr; iOS+**,
+  use bundle ID `com.remotedesktop.ios`. Same as Android: no plist
+  download required.
+
+## 5. Open the desktop and run the wizard
+
+```sh
+cd desktop && npm start
+```
+
+Step through the wizard — the rest is automatic.
+
+## Re-running the wizard
+
+Inside the running session, click **Change backend configuration**.
+That clears the stored config and re-opens the wizard.
+
+## Cross-references
+
+- [SETUP_WIZARD.md](SETUP_WIZARD.md) — what each wizard step does and
+  the diagnostics it surfaces.
+- [SECURITY.md](SECURITY.md) — what to treat as sensitive (hint: the
+  QR code) and what the rules protect against.

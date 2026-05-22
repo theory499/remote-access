@@ -1,0 +1,44 @@
+name: RemoteDesktop
+options:
+  bundleIdPrefix: com.remotedesktop
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    IPHONEOS_DEPLOYMENT_TARGET: "15.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  RemoteDesktop:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: RemoteDesktop/Sources
+      - path: RemoteDesktop/Resources
+    info:
+      path: RemoteDesktop/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Remote Desktop
+        UILaunchScreen: { }
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSCameraUsageDescription: "Used to scan the pairing QR code shown on the desktop app."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.remotedesktop.ios
+        TARGETED_DEVICE_FAMILY: "1,2"
+
+  RemoteDesktopTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: RemoteDesktopTests
+    dependencies:
+      - target: RemoteDesktop

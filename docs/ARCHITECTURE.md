@@ -209,5 +209,5 @@ client doesn't need to know the desktop's native resolution.
   these components together.
 - [SCREEN_SHARING.md](SCREEN_SHARING.md) - the video path.
 - [INPUT_HANDLING.md](INPUT_HANDLING.md) - the input path.
-- [DESKTOP.md](DESKTOP.md) and [MOBILE.md](MOBILE.md) - file-by-file
+- [DESKTOP.md](DESKTOP.md) and [ANDROID.md](ANDROID.md) - file-by-file
   references.

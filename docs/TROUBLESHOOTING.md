@@ -28,7 +28,7 @@ you are seeing, then follow the steps in the right-hand column.
 | --- | --- | --- |
 | Mobile shows "Waiting for desktop offer" forever | Mobile's `sessions/{code}/client` is not visible to the desktop because of rules. | Re-check the rules pasted in Firebase; confirm both peers signed in (the desktop log will show "Signed in as ..."). Check that the code on the phone exactly matches the desktop. |
 | Desktop log shows "Client connected" but mobile shows no video | WebRTC negotiation stalled. | Look at the log for "Negotiation failed" or "Failed to set remote description". Confirm both peers can reach the STUN servers (`stun.l.google.com:19302`). |
-| Mobile's status flips between `connecting` and `failed` | ICE could not find a path - typically symmetric NAT or strict firewall. | Add a TURN server to `ICE_SERVERS` in `desktop/src/renderer/renderer.js` and `DEFAULT_ICE_SERVERS` in `mobile/.../webrtc/WebRTCClient.kt`. |
+| Mobile's status flips between `connecting` and `failed` | ICE could not find a path - typically symmetric NAT or strict firewall. | Add a TURN server to `ICE_SERVERS` in `desktop/src/renderer/renderer.js` and `DEFAULT_ICE_SERVERS` in `mobile/android/app/src/main/.../webrtc/WebRTCClient.kt`. |
 | Connection state reaches "connected" but RTT in the desktop UI stays `-` | Data channel never opened. | Confirm the desktop log includes "Input data channel open" within a couple of seconds of `connected`. If not, examine the SDP for the `m=application` line. |
 
 ## During an active session
@@ -55,13 +55,13 @@ you are seeing, then follow the steps in the right-hand column.
 | --- | --- | --- |
 | `npm test` fails with `crypto` resolution error | You are bundling for the browser without Node 19+ available. | The `getRandomBytes` helper in `session-id.js` relies on `globalThis.crypto`. Use Node 19 or newer. The shipping package.json already declares this in `engines`. |
 | `npm run build:renderer` shows a 1.2MB bundle warning | Firebase modular SDK is included. | This is expected. The bundle is mostly compressed code; gzip brings it under 400 KB. |
-| `gradle test` in `mobile/` fails with "Cannot find a Java installation" | The JVM toolchain version does not match. | Install JDK 17, or remove the toolchain block in `app/build.gradle.kts` to fall back to the system JDK. |
-| `gradle test` in `mobile/verify/` fails to download plugins | Network access blocked. | Configure a proxy via `~/.gradle/gradle.properties` (`systemProp.http.proxyHost=...`) or use a local Maven mirror. |
+| `gradle test` in `mobile/android/` fails with "Cannot find a Java installation" | The JVM toolchain version does not match. | Install JDK 17, or remove the toolchain block in `app/build.gradle.kts` to fall back to the system JDK. |
+| `gradle test` in `mobile/android/verify/` fails to download plugins | Network access blocked. | Configure a proxy via `~/.gradle/gradle.properties` (`systemProp.http.proxyHost=...`) or use a local Maven mirror. |
 | Android instrumented tests time out | No connected device / emulator. | Run `adb devices` and confirm at least one device appears. The script will skip this step automatically if `ANDROID_HOME` is unset. |
 
 ## Where to look next
 
 - For protocol questions: [PROTOCOL.md](PROTOCOL.md).
 - For lifecycle questions: [CONNECTION_FLOW.md](CONNECTION_FLOW.md).
-- For module questions: [DESKTOP.md](DESKTOP.md), [MOBILE.md](MOBILE.md).
+- For module questions: [DESKTOP.md](DESKTOP.md), [ANDROID.md](ANDROID.md).
 - For test infrastructure questions: [TESTING.md](TESTING.md).

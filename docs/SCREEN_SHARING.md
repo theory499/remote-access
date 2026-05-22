@@ -229,5 +229,5 @@ representative of a typical desktop application UI.
   alongside the video track.
 - [DESKTOP.md](DESKTOP.md#screen-capture) for a module-level reference
   of the desktop capture code.
-- [MOBILE.md](MOBILE.md#webrtc-client) for the Android `WebRTCClient`
+- [ANDROID.md](ANDROID.md#webrtc-client) for the Android `WebRTCClient`
   reference.

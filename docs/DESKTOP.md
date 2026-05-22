@@ -393,4 +393,4 @@ Run everything with `npm test`. See [TESTING.md](TESTING.md) for more.
   `renderer.js` in their video role.
 - [INPUT_HANDLING.md](INPUT_HANDLING.md) for `input-controller.js` and
   `protocol.js` in their input role.
-- [MOBILE.md](MOBILE.md) for the Android counterparts.
+- [ANDROID.md](ANDROID.md) for the Android counterparts.

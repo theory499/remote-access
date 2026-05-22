@@ -25,22 +25,26 @@ cd remote-access
 cd desktop
 npm install
 
-# Mobile (only if you have the Android SDK)
-cd ../mobile
-gradle wrapper            # generates ./gradlew
-# Place your downloaded google-services.json into app/google-services.json
+# Android (only if you have the Android SDK)
+cd ../mobile/android
+gradle wrapper --gradle-version 8.14.3      # generates ./gradlew
+
+# iOS (only on macOS with Xcode)
+cd ../ios
+xcodegen generate                            # generates RemoteDesktop.xcodeproj
+pod install                                  # downloads Firebase + WebRTC pods
 
 # Firebase
 # See docs/FIREBASE_SETUP.md and paste firebase/database.rules.json into the console.
 ```
 
-You also need to fill in two configuration files:
-- `desktop/src/shared/firebase-config.js` - your Firebase web config.
-- `mobile/app/google-services.json` - your Firebase Android config.
+There is **no** `firebase-config.js` or `google-services.json` to
+fill in. Configuration happens at runtime through the desktop setup
+wizard - it persists credentials to Electron's user-data directory
+and pushes them to each mobile client via a QR code.
 
-The repository ships placeholder versions of both so the project lays
-out cleanly without these files; the app will not actually connect to
-Firebase until you replace them.
+The wizard is documented in
+[SETUP_WIZARD.md](SETUP_WIZARD.md).
 
 ## Running the desktop locally
 
@@ -61,16 +65,22 @@ When you edit `src/renderer/renderer.js`, the bundler regenerates
 pick up the change. Main-process and preload changes still require an
 Electron restart.
 
-## Running the mobile app locally
+## Running the Android client locally
 
 ```sh
-cd mobile
+cd mobile/android
 ./gradlew installDebug      # installs onto the connected device
-./gradlew run               # alternative if you have only an emulator
 ```
 
-The Android Studio "Run" action wraps these commands with the
+The Android Studio "Run" action wraps this command with the
 auto-deploy and log streaming that you would expect.
+
+## Running the iOS client locally
+
+Open `mobile/ios/RemoteDesktop.xcworkspace` in Xcode, choose a
+simulator or device, and press the **Run** button. The first build
+downloads Firebase and WebRTC pods (~300 MB) and signs the binary
+with your development team.
 
 ## Testing during development
 
@@ -83,14 +93,18 @@ cd desktop && npm test
 # Desktop with file watching
 cd desktop && npm run test:watch
 
-# Mobile JVM-safe verification (no Android SDK needed)
-cd mobile/verify && gradle test
+# Android JVM-safe verification (no Android SDK needed)
+cd mobile/android/verify && gradle test
 
-# Mobile full unit tests (Android SDK required)
-cd mobile && ./gradlew test
+# Android full unit tests (Android SDK required)
+cd mobile/android && ./gradlew test
 
-# Mobile instrumented tests (device or emulator required)
-cd mobile && ./gradlew connectedAndroidTest
+# Android instrumented tests (device or emulator required)
+cd mobile/android && ./gradlew connectedAndroidTest
+
+# iOS tests (Xcode required)
+cd mobile/ios && xcodebuild -scheme RemoteDesktop \
+    -destination 'platform=iOS Simulator,name=iPhone 15' test
 ```
 
 Run everything the host environment can support:
@@ -134,7 +148,7 @@ When opening a pull request, include:
   for short methods, `data class` for value types.
 - Keep Android-framework-dependent code under `ui/` or in clearly
   named files (`AndroidKeyMapper`); everything else should be pure
-  Kotlin so it can run under `mobile/verify/`.
+  Kotlin so it can run under `mobile/android/verify/`.
 - Use the existing `SignalingClient` / `WebRTCClient` callback-based
   APIs rather than `kotlinx.coroutines` unless there is a clear win,
   to keep the surface narrow.
@@ -143,7 +157,7 @@ When opening a pull request, include:
 
 - Every public component should have a one-line description in
   [COMPONENTS.md](COMPONENTS.md) and a more detailed entry in either
-  [DESKTOP.md](DESKTOP.md) or [MOBILE.md](MOBILE.md).
+  [DESKTOP.md](DESKTOP.md) or [ANDROID.md](ANDROID.md).
 - When changing the wire protocol, update both
   [PROTOCOL.md](PROTOCOL.md) and the cross-platform compatibility
   tests in `desktop/tests/unit/protocol.test.js`.
@@ -157,8 +171,10 @@ A worked example to illustrate where things plug in.
 2. **Extend the validator.** Add a case in `desktop/src/shared/protocol.js`
    and update the unit tests in `tests/unit/protocol.test.js`.
 3. **Extend the encoder.** Add a function in
-   `mobile/.../input/InputEventEncoder.kt` and a test in
-   `app/src/test/.../InputEventEncoderTest.kt`.
+   `mobile/android/app/src/main/.../input/InputEventEncoder.kt`
+   (and the iOS mirror in
+   `mobile/ios/RemoteDesktop/Sources/InputEventEncoder.swift`)
+   plus unit tests in each platform's test folder.
 4. **Extend the controller.** Add a method on
    `desktop/src/main/input-controller.js` and a test in
    `tests/unit/input-controller.test.js` (with the mock in
@@ -179,14 +195,17 @@ entry will reject anything unspecified.
 ## Versioning and releases
 
 The current versioning scheme is plain SemVer in `package.json`
-(`1.0.0`) and `mobile/app/build.gradle.kts` (`versionName = "1.0.0"`).
-For coordinated releases:
+(`1.0.0`), `mobile/android/app/build.gradle.kts`
+(`versionName = "1.0.0"`), and `mobile/ios/project.yml`. For
+coordinated releases:
 
-1. Bump the version in both places.
+1. Bump the version in all three places.
 2. Run `npm run package` in `desktop/` to produce installer artifacts.
-3. Run `./gradlew assembleRelease` in `mobile/` to produce a signed
-   APK / AAB (requires a keystore).
-4. Tag the commit (`vX.Y.Z`) and attach the artifacts to a GitHub
+3. Run `./gradlew assembleRelease` in `mobile/android/` to produce a
+   signed APK / AAB (requires a keystore).
+4. In Xcode (or `xcodebuild`), archive `mobile/ios` for App Store
+   distribution.
+5. Tag the commit (`vX.Y.Z`) and attach the artifacts to a GitHub
    release.
 
 ## Where to read next

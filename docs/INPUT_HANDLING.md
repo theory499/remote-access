@@ -330,5 +330,5 @@ without crashing or behaving unpredictably.
 - [PROTOCOL.md](PROTOCOL.md) for the exact JSON schema.
 - [DESKTOP.md](DESKTOP.md#input-controller) for `InputController`'s
   full module reference.
-- [MOBILE.md](MOBILE.md#input) for the Android `InputEventEncoder`,
+- [ANDROID.md](ANDROID.md#input) for the Android `InputEventEncoder`,
   `RemoteSurfaceController`, and `AndroidKeyMapper`.

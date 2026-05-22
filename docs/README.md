@@ -26,14 +26,16 @@ links to the next layer of detail.
 | Document | Purpose |
 | --- | --- |
 | [DESKTOP.md](DESKTOP.md) | Every file under `desktop/` - what it does, who calls it, what it depends on. |
-| [MOBILE.md](MOBILE.md) | Every file under `mobile/` - what it does, who calls it, what it depends on. |
-| [COMPONENTS.md](COMPONENTS.md) | A one-page index of every named component on both sides. |
+| [ANDROID.md](ANDROID.md) | Every file under `mobile/android/`. |
+| [IOS.md](IOS.md) | Every file under `mobile/ios/`. |
+| [COMPONENTS.md](COMPONENTS.md) | A one-page index of every named component on each platform. |
 
 ## Operations
 
 | Document | Purpose |
 | --- | --- |
-| [FIREBASE_SETUP.md](FIREBASE_SETUP.md) | Creating the Firebase project, enabling Authentication and Realtime Database, wiring credentials into both apps. |
+| [SETUP_WIZARD.md](SETUP_WIZARD.md) | The first-run wizard in the desktop host - what each step does, what it validates, and the QR pairing flow. |
+| [FIREBASE_SETUP.md](FIREBASE_SETUP.md) | The three manual Firebase Console steps the wizard cannot automate. |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Local development setup, build commands, recommended IDE configuration. |
 | [TESTING.md](TESTING.md) | Test layers, what is covered, how to run each layer. |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | What to do when something does not work. |
@@ -58,7 +60,7 @@ links to the next layer of detail.
 
 **"I want to change the code."**
 1. [DEVELOPMENT.md](DEVELOPMENT.md)
-2. [DESKTOP.md](DESKTOP.md) or [MOBILE.md](MOBILE.md) for the area you are
+2. [DESKTOP.md](DESKTOP.md), [ANDROID.md](ANDROID.md), or [IOS.md](IOS.md) for the area you are
    touching.
 3. [COMPONENTS.md](COMPONENTS.md) for a quick lookup of where a name lives.
 4. [TESTING.md](TESTING.md) before opening a pull request.

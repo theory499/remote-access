@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com wss://*.firebaseio.com:*; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
+    <title>Remote Desktop Host - Setup</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="wizard">
+      <header>
+        <h1>Remote Desktop Host</h1>
+        <p class="muted">First-time setup</p>
+      </header>
+
+      <ol class="stepper" id="stepper">
+        <li class="active"><span>1</span> Backend</li>
+        <li><span>2</span> Web</li>
+        <li><span>3</span> Android</li>
+        <li><span>4</span> iOS</li>
+        <li><span>5</span> Pair</li>
+      </ol>
+
+      <!-- Step 1: choose backend -->
+      <section class="step card" data-step="1">
+        <h2>Pick a backend</h2>
+        <p class="muted">Choose the service that brokers the WebRTC handshake.</p>
+        <div class="choice-grid">
+          <button class="choice selected" data-backend="firebase">
+            <span class="choice-title">Firebase</span>
+            <span class="choice-sub">Realtime Database + Anonymous Auth</span>
+          </button>
+          <button class="choice disabled" disabled>
+            <span class="choice-title">Custom signalling</span>
+            <span class="choice-sub">Coming soon</span>
+          </button>
+        </div>
+        <div class="actions">
+          <button class="primary" data-action="next">Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 2: Web config + probe -->
+      <section class="step card hidden" data-step="2">
+        <h2>Firebase web config (this desktop)</h2>
+        <p class="muted">Paste the <code>firebaseConfig</code> object from Firebase Console &rarr; Project settings &rarr; Your apps &rarr; Web app. The wizard will sign in anonymously and write a test record to confirm everything works.</p>
+        <details>
+          <summary>Don't have it yet? Click for setup steps.</summary>
+          <ol class="hints">
+            <li>Create a project at <code>console.firebase.google.com</code>.</li>
+            <li>Build &rarr; Authentication &rarr; Sign-in method &rarr; enable Anonymous.</li>
+            <li>Build &rarr; Realtime Database &rarr; Create database.</li>
+            <li>Realtime Database &rarr; Rules: paste the rules from <button class="link" data-action="copy-rules">Copy rules</button> and Publish.</li>
+            <li>Project settings &rarr; Your apps &rarr; Add Web app, copy the config object.</li>
+          </ol>
+        </details>
+        <textarea id="webConfigInput" rows="10" spellcheck="false"
+          placeholder='{
+  "apiKey": "...",
+  "authDomain": "your-project.firebaseapp.com",
+  "databaseURL": "https://your-project-default-rtdb.firebaseio.com",
+  "projectId": "your-project",
+  "appId": "1:1234567890:web:..."
+}'></textarea>
+        <div class="hint" id="webHint"></div>
+        <div class="actions">
+          <button data-action="back">Back</button>
+          <button class="primary" id="webProbeButton" data-action="probe-web">Test connection</button>
+          <button class="primary hidden" id="webNextButton" data-action="next">Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 3: Android config -->
+      <section class="step card hidden" data-step="3">
+        <h2>Firebase Android config</h2>
+        <p class="muted">Add an Android app to your Firebase project (package <code>com.remotedesktop</code>), then paste the values below. The phone will receive these via QR; no <code>google-services.json</code> is needed.</p>
+        <p class="muted small">From the downloaded <code>google-services.json</code>: <code>client[0].api_key[0].current_key</code>, <code>client[0].client_info.mobilesdk_app_id</code>, top-level <code>project_info.project_id</code>, <code>project_info.firebase_url</code>.</p>
+        <div class="form-grid">
+          <label>API key
+            <input type="text" id="androidApiKey" placeholder="AIza..." spellcheck="false" />
+          </label>
+          <label>Application ID
+            <input type="text" id="androidApplicationId" placeholder="1:1234567890:android:..." spellcheck="false" />
+          </label>
+          <label>Project ID
+            <input type="text" id="androidProjectId" placeholder="your-project" spellcheck="false" />
+          </label>
+          <label>Database URL
+            <input type="text" id="androidDatabaseUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" spellcheck="false" />
+          </label>
+        </div>
+        <label class="checkbox">
+          <input type="checkbox" id="androidSkip" />
+          Skip Android (I only need iOS).
+        </label>
+        <div class="hint" id="androidHint"></div>
+        <div class="actions">
+          <button data-action="back">Back</button>
+          <button class="primary" data-action="next-android">Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 4: iOS config -->
+      <section class="step card hidden" data-step="4">
+        <h2>Firebase iOS config</h2>
+        <p class="muted">Add an iOS app to your Firebase project (bundle <code>com.remotedesktop.ios</code>), then paste the values below. The phone will receive these via QR; no <code>GoogleService-Info.plist</code> is needed.</p>
+        <p class="muted small">From the downloaded <code>GoogleService-Info.plist</code>: <code>API_KEY</code>, <code>GOOGLE_APP_ID</code>, <code>PROJECT_ID</code>, <code>DATABASE_URL</code>, <code>BUNDLE_ID</code>.</p>
+        <div class="form-grid">
+          <label>API key
+            <input type="text" id="iosApiKey" placeholder="AIza..." spellcheck="false" />
+          </label>
+          <label>Google app ID
+            <input type="text" id="iosGoogleAppId" placeholder="1:1234567890:ios:..." spellcheck="false" />
+          </label>
+          <label>Project ID
+            <input type="text" id="iosProjectId" placeholder="your-project" spellcheck="false" />
+          </label>
+          <label>Database URL
+            <input type="text" id="iosDatabaseUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" spellcheck="false" />
+          </label>
+          <label>Bundle ID
+            <input type="text" id="iosBundleId" placeholder="com.remotedesktop.ios" spellcheck="false" />
+          </label>
+        </div>
+        <label class="checkbox">
+          <input type="checkbox" id="iosSkip" />
+          Skip iOS (I only need Android).
+        </label>
+        <div class="hint" id="iosHint"></div>
+        <div class="actions">
+          <button data-action="back">Back</button>
+          <button class="primary" data-action="next-ios">Continue</button>
+        </div>
+      </section>
+
+      <!-- Step 5: QR pairing + finish -->
+      <section class="step card hidden" data-step="5">
+        <h2>Pair your phone</h2>
+        <p class="muted">Scan this QR code from the Remote Desktop app on your phone. It contains the Firebase configuration for the platform your phone reads it on.</p>
+        <div class="qr-wrap">
+          <img id="qrImage" alt="Mobile pairing QR code" />
+        </div>
+        <p class="muted small">Anyone holding this image can configure a phone against your Firebase project. Treat it like a deployment key.</p>
+        <div class="actions">
+          <button data-action="back">Back</button>
+          <button class="primary" data-action="finish">Save and start</button>
+        </div>
+      </section>
+
+      <p id="globalError" class="error hidden" aria-live="polite"></p>
+    </main>
+    <script src="setup.js" defer></script>
+  </body>
+</html>

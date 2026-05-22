@@ -171,5 +171,5 @@ fashion.
   message follows.
 - [DESKTOP.md](DESKTOP.md#srcsharedprotocoljs) - implementation of
   `validate`, `parse`, `encode`.
-- [MOBILE.md](MOBILE.md#inputinputeventencoderkt) - implementation of
+- [ANDROID.md](ANDROID.md#inputinputeventencoderkt) - implementation of
   `InputEventEncoder`.

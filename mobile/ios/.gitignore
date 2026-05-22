@@ -1,0 +1,13 @@
+# Xcode / build artifacts
+build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Configuration that contains secrets
+GoogleService-Info.plist
