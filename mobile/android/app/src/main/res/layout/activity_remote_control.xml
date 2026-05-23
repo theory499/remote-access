@@ -4,79 +4,216 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:keepScreenOn="true"
-    android:background="@android:color/black">
+    android:background="#000000"
+    android:keepScreenOn="true">
 
-    <org.webrtc.SurfaceViewRenderer
-        android:id="@+id/remoteVideo"
-        android:layout_width="0dp"
+    <!-- Video viewport (top) -->
+    <FrameLayout
+        android:id="@+id/videoContainer"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:background="#0A0A0A"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/statusBar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintDimensionRatio="W,16:9">
 
-    <View
+        <org.webrtc.SurfaceViewRenderer
+            android:id="@+id/remoteVideo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:id="@+id/cursorIndicator"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:contentDescription="@string/cursor_indicator"
+            android:elevation="2dp"
+            android:src="@drawable/ic_cursor" />
+    </FrameLayout>
+
+    <!-- Status strip -->
+    <LinearLayout
         android:id="@+id/statusBar"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:background="#222222"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:background="#161616"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        app:layout_constraintTop_toBottomOf="@id/videoContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/codeLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="monospace"
+            android:textColor="#BBBBBB"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:fontFamily="monospace"
+            android:gravity="end"
+            android:maxLines="1"
+            android:textColor="#BBBBBB"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Controls panel -->
+    <LinearLayout
+        android:id="@+id/controlsPanel"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#0A0A0A"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        app:layout_constraintTop_toBottomOf="@id/statusBar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <TextView
-        android:id="@+id/codeLabel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textColor="#cccccc"
-        android:textSize="12sp"
-        android:fontFamily="monospace"
-        android:paddingStart="16dp"
-        android:paddingEnd="8dp"
-        app:layout_constraintBottom_toBottomOf="@id/statusBar"
-        app:layout_constraintTop_toTopOf="@id/statusBar"
-        app:layout_constraintStart_toStartOf="@id/statusBar"
-        app:layout_constraintEnd_toStartOf="@id/statusText" />
+        <!-- Utility row: keyboard -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/keyboardButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/action_keyboard"
+            android:textColor="#FFFFFF"
+            app:strokeColor="#666666" />
 
-    <TextView
-        android:id="@+id/statusText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textColor="#cccccc"
-        android:textSize="12sp"
-        android:fontFamily="monospace"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        app:layout_constraintBottom_toBottomOf="@id/statusBar"
-        app:layout_constraintTop_toTopOf="@id/statusBar"
-        app:layout_constraintStart_toEndOf="@id/codeLabel"
-        app:layout_constraintEnd_toStartOf="@id/keyboardButton" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="12dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/keyboardButton"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:text="@string/action_keyboard"
-        android:textSize="12sp"
-        android:minWidth="0dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        app:layout_constraintEnd_toEndOf="@id/statusBar"
-        app:layout_constraintTop_toTopOf="@id/statusBar"
-        app:layout_constraintBottom_toBottomOf="@id/statusBar" />
+            <!-- Direction dial -->
+            <FrameLayout
+                android:id="@+id/dial"
+                android:layout_width="180dp"
+                android:layout_height="180dp">
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/dial_background" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/dialUp"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_gravity="top|center_horizontal"
+                    android:layout_marginTop="4dp"
+                    android:contentDescription="@string/cursor_up"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="↑"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    app:backgroundTint="#2C2C2C"
+                    app:cornerRadius="26dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/dialDown"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginBottom="4dp"
+                    android:contentDescription="@string/cursor_down"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="↓"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    app:backgroundTint="#2C2C2C"
+                    app:cornerRadius="26dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/dialLeft"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_gravity="center_vertical|start"
+                    android:layout_marginStart="4dp"
+                    android:contentDescription="@string/cursor_left"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="←"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    app:backgroundTint="#2C2C2C"
+                    app:cornerRadius="26dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/dialRight"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_gravity="center_vertical|end"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="@string/cursor_right"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="→"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    app:backgroundTint="#2C2C2C"
+                    app:cornerRadius="26dp" />
+            </FrameLayout>
+
+            <!-- Click buttons -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/leftClickButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:text="@string/action_left_click"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    app:backgroundTint="#1976D2"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/rightClickButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/action_right_click"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="#666666" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Hidden EditText for soft keyboard input -->
     <EditText
         android:id="@+id/keyboardInput"
         android:layout_width="1dp"
         android:layout_height="1dp"
-        android:visibility="visible"
-        android:inputType="text|textNoSuggestions"
-        android:importantForAutofill="no"
         android:background="@null"
         android:cursorVisible="false"
+        android:importantForAutofill="no"
+        android:inputType="text|textNoSuggestions"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

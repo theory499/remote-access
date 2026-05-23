@@ -3,13 +3,25 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- Outer ring (proximity / signal) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.5"
+        android:pathData="M54,30 A24,24 0 1 1 53.999,30 Z" />
+
+    <!-- Inner ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.8"
+        android:pathData="M54,40 A14,14 0 1 1 53.999,40 Z" />
+
+    <!-- Cursor arrow (lower-right corner) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M30,30h48v36h-48zM34,34v28h40v-28z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M44,70h20v6h-20z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M38,76h32v3h-32z" />
+        android:strokeColor="#1976D2"
+        android:strokeWidth="1.2"
+        android:pathData="M58,58 L58,80 L64,75 L68,82 L71,80 L67,73 L74,73 Z" />
 </vector>

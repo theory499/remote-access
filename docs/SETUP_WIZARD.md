@@ -22,9 +22,9 @@ variables.
 
 | Platform | Path |
 | --- | --- |
-| macOS    | `~/Library/Application Support/Remote Desktop Host/backend-config.json` |
-| Linux    | `~/.config/Remote Desktop Host/backend-config.json` |
-| Windows  | `%APPDATA%\Remote Desktop Host\backend-config.json` |
+| macOS    | `~/Library/Application Support/Proxia/backend-config.json` |
+| Linux    | `~/.config/Proxia/backend-config.json` |
+| Windows  | `%APPDATA%\Proxia\backend-config.json` |
 
 The file is written with mode `0600` so only the current user can
 read it. You can delete it manually to force the wizard back to step 1.
@@ -108,7 +108,7 @@ skip both — at least one mobile platform must be configured.
 ## Step 5 — Pair the phone
 
 The wizard generates a QR code containing all the values you just
-entered. Open the Remote Desktop app on your phone and either:
+entered. Open the Proxia app on your phone and either:
 
 - **Point the camera at the QR** (live scan), or
 - **Tap "Choose image from gallery"** and pick a saved screenshot of

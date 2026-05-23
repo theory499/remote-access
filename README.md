@@ -1,4 +1,4 @@
-# Remote Desktop over Firebase
+# Proxia
 
 A fully functional remote desktop suite that lets an Android phone or
 an iPhone view and control a desktop computer over the internet. All

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#1976D2"/>
+
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="110" fill="none" stroke="#FFFFFF" stroke-width="16"/>
+  <!-- Inner ring -->
+  <circle cx="256" cy="256" r="62"  fill="none" stroke="#FFFFFF" stroke-width="8"/>
+
+  <!-- Cursor arrow -->
+  <g transform="translate(232, 224)">
+    <path
+      d="M0,0 L0,128 L34,98 L60,154 L80,144 L54,90 L96,90 Z"
+      fill="#FFFFFF"
+      stroke="#1976D2"
+      stroke-width="6"
+      stroke-linejoin="round"/>
+  </g>
+</svg>

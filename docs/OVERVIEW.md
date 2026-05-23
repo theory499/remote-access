@@ -2,7 +2,7 @@
 
 ## What it is
 
-The Remote Desktop over Firebase suite is a two-part application that
+Proxia is a two-part application that
 lets a person see and control their desktop computer from an Android
 phone over the internet. The desktop runs an Electron application that
 captures its own screen and accepts remote input. The phone runs a

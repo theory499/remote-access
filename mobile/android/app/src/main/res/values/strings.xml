@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Remote Desktop</string>
-    <string name="subtitle_main">Enter the pairing code shown on your desktop to start controlling it.</string>
+    <string name="app_name">Proxia</string>
+    <string name="subtitle_main">Enter the pairing code shown on your Proxia host to start controlling it.</string>
     <string name="hint_pairing_code">Pairing code</string>
     <string name="action_connect">Connect</string>
     <string name="action_keyboard">Keyboard</string>
@@ -23,7 +23,7 @@
     <!-- QR setup -->
     <string name="qr_title">Scan the QR code shown on your desktop</string>
     <string name="qr_status_aim">Aim at the pairing QR code</string>
-    <string name="qr_status_invalid">That QR is not a Remote Desktop config. Try the one in the desktop app.</string>
+    <string name="qr_status_invalid">That QR is not a Proxia config. Try the one in the Proxia host.</string>
     <string name="qr_status_saving">Saving configuration…</string>
     <string name="qr_status_ok">Configuration applied.</string>
     <string name="qr_camera_denied">Camera permission is required to scan the QR code.</string>
@@ -31,4 +31,13 @@
     <string name="qr_no_code_in_image">No QR code found in that image. Try a different image.</string>
     <string name="qr_image_read_failed">Could not read the selected image: %1$s</string>
     <string name="action_change_backend">Change backend configuration</string>
+
+    <!-- Cursor dial -->
+    <string name="action_left_click">Left click</string>
+    <string name="action_right_click">Right click</string>
+    <string name="cursor_up">Move cursor up</string>
+    <string name="cursor_down">Move cursor down</string>
+    <string name="cursor_left">Move cursor left</string>
+    <string name="cursor_right">Move cursor right</string>
+    <string name="cursor_indicator">Remote cursor</string>
 </resources>

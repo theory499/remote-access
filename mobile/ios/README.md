@@ -1,4 +1,4 @@
-# Remote Desktop — iOS client
+# Proxia — iOS client
 
 A native SwiftUI client. Firebase is initialised at runtime from a
 QR-scanned configuration, so this app ships **without** any

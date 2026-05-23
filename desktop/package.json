@@ -1,7 +1,7 @@
 {
-  "name": "remote-desktop-host",
+  "name": "proxia-host",
   "version": "1.0.0",
-  "description": "Cross-platform remote desktop host that pairs with the Android client via Firebase.",
+  "description": "Proxia host - cross-platform remote desktop that pairs with the Proxia mobile clients via Firebase.",
   "main": "src/main/main.js",
   "scripts": {
     "build:renderer": "esbuild src/renderer/renderer.js --bundle --format=iife --platform=browser --outfile=src/renderer/renderer.bundle.js --target=chrome120",
@@ -15,8 +15,8 @@
     "package": "npm run build:renderer && electron-builder"
   },
   "build": {
-    "appId": "com.remotedesktop.host",
-    "productName": "Remote Desktop Host",
+    "appId": "com.proxia.host",
+    "productName": "Proxia",
     "files": [
       "src/**/*",
       "assets/**/*",

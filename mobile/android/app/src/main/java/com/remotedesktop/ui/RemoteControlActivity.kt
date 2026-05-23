@@ -1,9 +1,10 @@
 package com.remotedesktop.ui
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.GestureDetector
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -14,14 +15,13 @@ import com.remotedesktop.RemoteDesktopApp
 import com.remotedesktop.databinding.ActivityRemoteControlBinding
 import com.remotedesktop.input.AndroidKeyMapper
 import com.remotedesktop.input.InputEventEncoder
-import com.remotedesktop.input.RemoteSurfaceController
 import com.remotedesktop.signaling.IceCandidatePayload
-import com.remotedesktop.signaling.SdpPayload
 import com.remotedesktop.signaling.SignalingClient
 import com.remotedesktop.webrtc.WebRTCClient
 import org.webrtc.DataChannel
 import org.webrtc.EglBase
 import org.webrtc.PeerConnection
+import org.webrtc.RendererCommon
 import org.webrtc.SurfaceViewRenderer
 import org.webrtc.VideoTrack
 import java.nio.charset.StandardCharsets
@@ -31,11 +31,16 @@ class RemoteControlActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_SESSION_CODE = "session_code"
+
+        private const val CURSOR_STEP = 0.012       // 1.2% of remote screen per tap
+        private const val REPEAT_INITIAL_DELAY = 90L
+        private const val REPEAT_INTERVAL = 35L
+        private const val REPEAT_TAG = -0x70010001  // arbitrary unique tag id
     }
 
     private lateinit var binding: ActivityRemoteControlBinding
     private val eglBase: EglBase = EglBase.create()
-    private val surfaceController = RemoteSurfaceController()
+    private val handler = Handler(Looper.getMainLooper())
 
     private var signaling: SignalingClient? = null
     private var webRtc: WebRTCClient? = null
@@ -45,7 +50,11 @@ class RemoteControlActivity : AppCompatActivity() {
     private var sessionCode: String = ""
     private val offerAccepted = AtomicBoolean(false)
     private val pendingIce = mutableListOf<IceCandidatePayload>()
-    private var remoteDescriptionSet = false
+    @Volatile private var remoteDescriptionSet = false
+
+    // Cursor state, normalised to [0, 1] over the remote desktop.
+    private var cursorX = 0.5
+    private var cursorY = 0.5
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,8 +69,14 @@ class RemoteControlActivity : AppCompatActivity() {
         binding.codeLabel.text = getString(R.string.label_pairing_code, sessionCode)
 
         configureRenderer(binding.remoteVideo)
-        configureTouchInput()
+        configureCursorDial()
+        configureClickButtons()
         configureKeyboardInput()
+        configureVideoTouch()
+
+        binding.videoContainer.viewTreeObserver.addOnGlobalLayoutListener {
+            updateCursorVisualisation()
+        }
 
         startSession()
     }
@@ -70,49 +85,57 @@ class RemoteControlActivity : AppCompatActivity() {
         renderer.init(eglBase.eglBaseContext, null)
         renderer.setEnableHardwareScaler(true)
         renderer.setMirror(false)
-        renderer.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
-            surfaceController.updateSurfaceSize(v.width, v.height)
+        renderer.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
+    }
+
+    private fun configureCursorDial() {
+        wireRepeatButton(binding.dialUp)    { moveCursor(0.0, -CURSOR_STEP) }
+        wireRepeatButton(binding.dialDown)  { moveCursor(0.0,  CURSOR_STEP) }
+        wireRepeatButton(binding.dialLeft)  { moveCursor(-CURSOR_STEP, 0.0) }
+        wireRepeatButton(binding.dialRight) { moveCursor( CURSOR_STEP, 0.0) }
+    }
+
+    private fun configureClickButtons() {
+        binding.leftClickButton.setOnClickListener {
+            send(InputEventEncoder.click(cursorX, cursorY, "left"))
+        }
+        binding.rightClickButton.setOnClickListener {
+            send(InputEventEncoder.click(cursorX, cursorY, "right"))
         }
     }
 
-    private fun configureTouchInput() {
-        val detector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onSingleTapUp(e: MotionEvent): Boolean {
-                val p = surfaceController.toNormalised(e.x, e.y)
-                send(InputEventEncoder.click(p.x, p.y, "left"))
-                return true
-            }
-            override fun onLongPress(e: MotionEvent) {
-                val p = surfaceController.toNormalised(e.x, e.y)
-                send(InputEventEncoder.click(p.x, p.y, "right"))
-            }
-        })
-
+    private fun configureVideoTouch() {
         binding.remoteVideo.setOnTouchListener { v, event ->
-            detector.onTouchEvent(event)
-            if (event.actionMasked == MotionEvent.ACTION_MOVE) {
-                val p = surfaceController.toNormalised(event.x, event.y)
-                send(InputEventEncoder.mouseMove(p.x, p.y))
+            val containerW = binding.videoContainer.width.toFloat()
+            val containerH = binding.videoContainer.height.toFloat()
+            if (containerW <= 0f || containerH <= 0f) return@setOnTouchListener false
+            val xN = (event.x / containerW).toDouble().coerceIn(0.0, 1.0)
+            val yN = (event.y / containerH).toDouble().coerceIn(0.0, 1.0)
+
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN,
+                MotionEvent.ACTION_MOVE -> {
+                    setCursorAt(xN, yN)
+                    send(InputEventEncoder.mouseMove(xN, yN))
+                }
+                MotionEvent.ACTION_UP -> v.performClick()
             }
-            if (event.actionMasked == MotionEvent.ACTION_UP) v.performClick()
             true
         }
+    }
 
+    private fun configureKeyboardInput() {
         binding.keyboardButton.setOnClickListener {
             binding.keyboardInput.requestFocus()
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(binding.keyboardInput, InputMethodManager.SHOW_IMPLICIT)
         }
-    }
-
-    private fun configureKeyboardInput() {
         binding.keyboardInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
                 if (s == null || s.isEmpty()) return
-                val toSend = s.toString()
-                send(InputEventEncoder.typeText(toSend))
+                send(InputEventEncoder.typeText(s.toString()))
                 s.clear()
             }
         })
@@ -134,6 +157,59 @@ class RemoteControlActivity : AppCompatActivity() {
             return true
         }
         return super.onKeyUp(keyCode, event)
+    }
+
+    private fun moveCursor(dx: Double, dy: Double) {
+        cursorX = (cursorX + dx).coerceIn(0.0, 1.0)
+        cursorY = (cursorY + dy).coerceIn(0.0, 1.0)
+        updateCursorVisualisation()
+        send(InputEventEncoder.mouseMove(cursorX, cursorY))
+    }
+
+    private fun setCursorAt(xN: Double, yN: Double) {
+        cursorX = xN.coerceIn(0.0, 1.0)
+        cursorY = yN.coerceIn(0.0, 1.0)
+        updateCursorVisualisation()
+    }
+
+    private fun updateCursorVisualisation() {
+        val container = binding.videoContainer
+        val cursorView = binding.cursorIndicator
+        val w = container.width.toFloat()
+        val h = container.height.toFloat()
+        if (w <= 0f || h <= 0f) return
+        cursorView.translationX = (cursorX * w).toFloat() - cursorView.width / 2f
+        cursorView.translationY = (cursorY * h).toFloat() - cursorView.height / 2f
+    }
+
+    private fun wireRepeatButton(button: View, action: () -> Unit) {
+        button.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    action()
+                    val runnable = object : Runnable {
+                        override fun run() {
+                            action()
+                            handler.postDelayed(this, REPEAT_INTERVAL)
+                        }
+                    }
+                    v.setTag(REPEAT_TAG, runnable)
+                    handler.postDelayed(runnable, REPEAT_INITIAL_DELAY)
+                    v.isPressed = true
+                    true
+                }
+                MotionEvent.ACTION_UP,
+                MotionEvent.ACTION_CANCEL -> {
+                    (v.getTag(REPEAT_TAG) as? Runnable)?.let { handler.removeCallbacks(it) }
+                    v.setTag(REPEAT_TAG, null)
+                    v.isPressed = false
+                    v.performClick()
+                    true
+                }
+                else -> false
+            }
+        }
+        button.setOnClickListener { /* fires through the touch listener */ }
     }
 
     private fun send(message: String) {
@@ -163,9 +239,7 @@ class RemoteControlActivity : AppCompatActivity() {
                     track.addSink(binding.remoteVideo)
                 }
             }
-            override fun onDataChannel(channel: DataChannel) {
-                attachDataChannel(channel)
-            }
+            override fun onDataChannel(channel: DataChannel) { attachDataChannel(channel) }
             override fun onConnectionStateChange(state: PeerConnection.PeerConnectionState) {
                 runOnUiThread { updateStatus(state.name) }
             }
@@ -185,9 +259,8 @@ class RemoteControlActivity : AppCompatActivity() {
                     for (candidate in pendingIce) rtc.addRemoteIceCandidate(candidate)
                     pendingIce.clear()
                 }
-                rtc.createAnswer(onSuccess = { answer ->
-                    sig.sendAnswer(answer)
-                }, onError = { updateStatus(it) })
+                rtc.createAnswer(onSuccess = { answer -> sig.sendAnswer(answer) },
+                                 onError = { updateStatus(it) })
             }, onError = { updateStatus(it) })
         }
 
@@ -203,8 +276,8 @@ class RemoteControlActivity : AppCompatActivity() {
         }
 
         sig.watchPeerPresence { presence ->
-            if (presence == null) {
-                runOnUiThread { updateStatus(getString(R.string.status_host_offline)) }
+            if (presence == null) runOnUiThread {
+                updateStatus(getString(R.string.status_host_offline))
             }
         }
 
@@ -216,15 +289,12 @@ class RemoteControlActivity : AppCompatActivity() {
         channel.registerObserver(object : DataChannel.Observer {
             override fun onBufferedAmountChange(previousAmount: Long) {}
             override fun onStateChange() {
-                runOnUiThread {
-                    updateStatus(getString(R.string.status_channel_state, channel.state().name))
-                }
+                runOnUiThread { updateStatus(getString(R.string.status_channel_state, channel.state().name)) }
             }
             override fun onMessage(buffer: DataChannel.Buffer) {
                 val bytes = ByteArray(buffer.data.remaining())
                 buffer.data.get(bytes)
-                val message = String(bytes, StandardCharsets.UTF_8)
-                handleIncoming(channel, message)
+                handleIncoming(channel, String(bytes, StandardCharsets.UTF_8))
             }
         })
     }
@@ -232,11 +302,9 @@ class RemoteControlActivity : AppCompatActivity() {
     private fun handleIncoming(channel: DataChannel, message: String) {
         try {
             val json = org.json.JSONObject(message)
-            when (json.optString("type")) {
-                "ping" -> {
-                    val id = json.optInt("id", -1)
-                    if (id >= 0) webRtc?.sendData(channel, InputEventEncoder.pong(id))
-                }
+            if (json.optString("type") == "ping") {
+                val id = json.optInt("id", -1)
+                if (id >= 0) webRtc?.sendData(channel, InputEventEncoder.pong(id))
             }
         } catch (_: Exception) { /* ignore malformed */ }
     }
@@ -247,14 +315,11 @@ class RemoteControlActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        signaling?.dispose()
-        signaling = null
-        inputChannel?.close()
-        inputChannel = null
-        remoteVideo?.removeSink(binding.remoteVideo)
-        remoteVideo = null
-        webRtc?.dispose()
-        webRtc = null
+        handler.removeCallbacksAndMessages(null)
+        signaling?.dispose(); signaling = null
+        inputChannel?.close(); inputChannel = null
+        remoteVideo?.removeSink(binding.remoteVideo); remoteVideo = null
+        webRtc?.dispose(); webRtc = null
         binding.remoteVideo.release()
         eglBase.release()
     }

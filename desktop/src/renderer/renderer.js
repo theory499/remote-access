@@ -312,6 +312,26 @@ if (reconfigureBtn) {
   });
 }
 
+const showQrBtn = document.getElementById('showQr');
+const qrPanel = document.getElementById('qrPanel');
+const sessionQrImage = document.getElementById('sessionQrImage');
+if (showQrBtn && qrPanel && sessionQrImage) {
+  showQrBtn.addEventListener('click', async () => {
+    if (!qrPanel.classList.contains('hidden')) {
+      qrPanel.classList.add('hidden');
+      showQrBtn.textContent = 'Show pairing QR';
+      return;
+    }
+    const cfg = await window.api.getActiveConfig();
+    if (!cfg) { log('No saved configuration found.'); return; }
+    const result = await window.api.generateQr(cfg);
+    if (!result.ok) { log(`QR generation failed: ${result.error}`); return; }
+    sessionQrImage.src = result.dataUrl;
+    qrPanel.classList.remove('hidden');
+    showQrBtn.textContent = 'Hide pairing QR';
+  });
+}
+
 bootstrap().catch((err) => {
   setStatus({ status: 'error' });
   log(`Bootstrap failed: ${err.message}`);

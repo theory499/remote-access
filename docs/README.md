@@ -1,6 +1,6 @@
 # Documentation Hub
 
-Everything about the Remote Desktop over Firebase suite lives here. The
+Everything about the Proxia suite lives here. The
 documents below are organised so a reader can start anywhere and follow
 links to the next layer of detail.
 

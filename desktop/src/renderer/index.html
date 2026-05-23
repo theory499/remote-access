@@ -4,12 +4,12 @@
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app https://*.googleapis.com wss://*.firebaseio.com wss://*.firebasedatabase.app wss://*.firebaseio.com:* wss://*.firebasedatabase.app:*; script-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
-    <title>Remote Desktop Host</title>
+    <title>Proxia</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main>
-      <h1>Remote Desktop Host</h1>
+      <h1>Proxia</h1>
       <section class="card">
         <p class="label">Pairing code</p>
         <p id="pairing-code" class="code" aria-live="polite">------</p>
@@ -25,7 +25,16 @@
       </section>
       <section class="card">
         <button id="restart" type="button">Restart session</button>
+        <button id="showQr" type="button" style="margin-top: 8px;">Show pairing QR</button>
         <button id="reconfigure" type="button" style="margin-top: 8px;">Change backend configuration</button>
+      </section>
+
+      <section class="card hidden" id="qrPanel">
+        <p class="label">Pairing QR</p>
+        <div class="qr-wrap">
+          <img id="sessionQrImage" alt="Pairing QR" />
+        </div>
+        <p class="muted small">Share this QR with another phone to pair it. Treat it as a deployment key.</p>
       </section>
       <section class="log card">
         <p class="label">Log</p>

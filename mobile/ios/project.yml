@@ -23,7 +23,7 @@ targets:
     info:
       path: RemoteDesktop/Resources/Info.plist
       properties:
-        CFBundleDisplayName: Remote Desktop
+        CFBundleDisplayName: Proxia
         UILaunchScreen: { }
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

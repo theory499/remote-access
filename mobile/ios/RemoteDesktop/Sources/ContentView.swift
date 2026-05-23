@@ -26,7 +26,7 @@ private struct ScannerScreen: View {
 
             VStack {
                 VStack(spacing: 8) {
-                    Text("Scan the QR code shown on your desktop")
+                    Text("Scan the QR code shown by your Proxia host")
                         .font(.headline)
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
@@ -92,7 +92,7 @@ private struct ScannerScreen: View {
 
     private func handle(raw: String) {
         guard let config = FirebaseConfig.fromQrPayload(raw) else {
-            status = "That QR is not a Remote Desktop config. Try again."
+            status = "That QR is not a Proxia config. Try again."
             return
         }
         status = "Applying configuration..."
@@ -111,9 +111,9 @@ private struct MainScreen: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            Text("Remote Desktop")
+            Text("Proxia")
                 .font(.title2.bold())
-            Text("Enter the pairing code shown on your desktop.")
+            Text("Enter the pairing code shown on your Proxia host.")
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
 
@@ -154,7 +154,7 @@ private struct MainScreen: View {
                 .foregroundColor(.secondary)
         }
         .padding(24)
-        .navigationTitle("Remote Desktop")
+        .navigationTitle("Proxia")
         .fullScreenCover(isPresented: $showSession) {
             RemoteControlView(sessionCode: code)
                 .environmentObject(appState)

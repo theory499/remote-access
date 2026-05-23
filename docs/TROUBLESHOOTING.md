@@ -26,7 +26,7 @@ you are seeing, then follow the steps in the right-hand column.
 
 | Symptom | What to do |
 | --- | --- |
-| The Android emulator's camera shows a scripted living room scene, not the QR | Right-click the QR in the desktop wizard and save it as `qr.png`. Then `adb push qr.png /sdcard/Download/qr.png`. On the emulator, in the Remote Desktop app's QR scanner, tap **Choose image from gallery** and select the file. |
+| The Android emulator's camera shows a scripted living room scene, not the QR | Right-click the QR in the desktop wizard and save it as `qr.png`. Then `adb push qr.png /sdcard/Download/qr.png`. On the emulator, in the Proxia app's QR scanner, tap **Choose image from gallery** and select the file. |
 | The iOS Simulator's camera shows a virtual scene | Drag the saved `qr.png` from your Mac onto the Simulator window - it lands in Photos. In the app, tap **Choose image from gallery**. |
 | Picked image is rejected as "No QR code found" | Pick a higher-resolution screenshot. The desktop wizard's QR is 512x512 - that's plenty. Avoid screenshots with the QR off-centre or with reflections. |
 

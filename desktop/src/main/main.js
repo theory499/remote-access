@@ -57,7 +57,7 @@ function createWindow() {
     width: 560,
     height: 720,
     resizable: true,
-    title: 'Remote Desktop Host',
+    title: 'Proxia',
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload', 'preload.js'),
       contextIsolation: true,
