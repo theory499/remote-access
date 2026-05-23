@@ -253,7 +253,22 @@ async function startSession() {
     onStatus: setStatus,
     onLog: log
   });
-  await session.start({ uid: auth.currentUser.uid });
+
+  const HANG_THRESHOLD_MS = 8000;
+  const dbUrl = (firebaseApp && firebaseApp.options && firebaseApp.options.databaseURL) || '<missing>';
+  const hangTimer = setTimeout(() => {
+    log(`Database write is taking longer than ${HANG_THRESHOLD_MS}ms.`);
+    log(`Configured databaseURL: ${dbUrl}`);
+    log('Open DevTools (View > Toggle Developer Tools) and look for a red error.');
+    log('Common causes: CSP blocking the connection (non-firebaseio.com region), wrong databaseURL, or offline.');
+  }, HANG_THRESHOLD_MS);
+
+  try {
+    await session.start({ uid: auth.currentUser.uid });
+  } finally {
+    clearTimeout(hangTimer);
+  }
+
   session.signaling.watchPeerPresence(async (presence) => {
     if (presence && !peerConnection) {
       try { await negotiate(); } catch (err) { log(`Negotiation failed: ${err.message}`); }
