@@ -23,26 +23,30 @@
 
         "offer": {
           ".write": "auth != null && root.child('sessions/' + $code + '/host/uid').val() == auth.uid",
-          ".validate": "newData.hasChild('sdp') && newData.hasChild('type') || !newData.exists()",
-          "$other":    { ".validate": false }
+          ".validate": "newData.hasChildren(['sdp', 'type']) || !newData.exists()",
+          "sdp":     { ".validate": "newData.isString()" },
+          "type":    { ".validate": "newData.isString()" },
+          "$other":  { ".validate": false }
         },
 
         "answer": {
           ".write": "auth != null && root.child('sessions/' + $code + '/client/uid').val() == auth.uid",
-          ".validate": "newData.hasChild('sdp') && newData.hasChild('type') || !newData.exists()",
-          "$other":    { ".validate": false }
+          ".validate": "newData.hasChildren(['sdp', 'type']) || !newData.exists()",
+          "sdp":     { ".validate": "newData.isString()" },
+          "type":    { ".validate": "newData.isString()" },
+          "$other":  { ".validate": false }
         },
 
         "iceCandidates": {
           "host": {
             ".write": "auth != null && root.child('sessions/' + $code + '/host/uid').val() == auth.uid",
             ".read":  "auth != null && root.child('sessions/' + $code + '/client/uid').val() == auth.uid",
-            "$id":    { ".validate": "newData.hasChild('candidate') || !newData.exists()" }
+            "$id": { ".validate": "newData.hasChild('candidate') || !newData.exists()" }
           },
           "client": {
             ".write": "auth != null && root.child('sessions/' + $code + '/client/uid').val() == auth.uid",
             ".read":  "auth != null && root.child('sessions/' + $code + '/host/uid').val() == auth.uid",
-            "$id":    { ".validate": "newData.hasChild('candidate') || !newData.exists()" }
+            "$id": { ".validate": "newData.hasChild('candidate') || !newData.exists()" }
           }
         },
 
