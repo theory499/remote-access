@@ -118,10 +118,20 @@ final class RemoteControlViewModel: NSObject, ObservableObject, WebRTCClientDele
         webrtc = rtc
         rtc.createConnection()
 
+        // Register presence FIRST. The session-level read rule denies a
+        // listener attach until this peer's uid is on the server, so we
+        // attach the offer / ICE / presence watchers in the completion
+        // callback - not immediately.
         sig.registerPresence { [weak self] error in
-            if let error = error { self?.status = "Signalling failed: \(error.localizedDescription)" }
+            if let error = error {
+                self?.status = "Signalling failed: \(error.localizedDescription)"
+                return
+            }
+            DispatchQueue.main.async { self?.attachListeners(sig: sig, rtc: rtc) }
         }
+    }
 
+    private func attachListeners(sig: SignalingClient, rtc: WebRTCClient) {
         sig.watchOffer { [weak self] offer in
             guard let self = self, !self.offerAccepted else { return }
             self.offerAccepted = true

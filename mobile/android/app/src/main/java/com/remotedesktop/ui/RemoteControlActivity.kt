@@ -247,10 +247,26 @@ class RemoteControlActivity : AppCompatActivity() {
         webRtc = rtc
         rtc.createConnection(WebRTCClient.DEFAULT_ICE_SERVERS)
 
+        // Register presence FIRST, then attach listeners in the completion
+        // callback. The session-level read rule requires this peer's uid to
+        // already be in either host/uid or client/uid before any listener can
+        // attach - if we attached watchers before the registerPresence write
+        // reached the server, every listener would be denied PERMISSION_DENIED
+        // and the offer would never reach this client.
         sig.registerPresence { error ->
-            if (error != null) updateStatus(getString(R.string.status_signaling_failed, error.localizedMessage))
+            if (error != null) {
+                runOnUiThread {
+                    updateStatus(getString(R.string.status_signaling_failed, error.localizedMessage))
+                }
+                return@registerPresence
+            }
+            attachSignalingListeners(sig, rtc)
         }
 
+        updateStatus(getString(R.string.status_waiting_offer))
+    }
+
+    private fun attachSignalingListeners(sig: SignalingClient, rtc: WebRTCClient) {
         sig.watchOffer { offer ->
             if (!offerAccepted.compareAndSet(false, true)) return@watchOffer
             rtc.setRemoteOffer(offer, onSuccess = {
@@ -280,8 +296,6 @@ class RemoteControlActivity : AppCompatActivity() {
                 updateStatus(getString(R.string.status_host_offline))
             }
         }
-
-        updateStatus(getString(R.string.status_waiting_offer))
     }
 
     private fun attachDataChannel(channel: DataChannel) {
